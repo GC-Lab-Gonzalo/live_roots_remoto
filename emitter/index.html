@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIDI Gateway - Emisor | GC Lab Chile</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #ffffff;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .card h2 {
+            font-size: 1.3rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .config-section {
+            display: grid;
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        input, select {
+            padding: 12px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        select option {
+            background: #1e3c72;
+            color: #ffffff;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 184, 148, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: #ffffff;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+
+        .led {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .led-red {
+            background: #e74c3c;
+            box-shadow: 0 0 10px #e74c3c, 0 0 20px #e74c3c;
+        }
+
+        .led-green {
+            background: #00b894;
+            box-shadow: 0 0 10px #00b894, 0 0 20px #00b894;
+        }
+
+        .led-yellow {
+            background: #f39c12;
+            box-shadow: 0 0 10px #f39c12, 0 0 20px #f39c12;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .stat-box {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #00b894;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+
+        .log-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 16px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.85rem;
+        }
+
+        .log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-note-on {
+            color: #00b894;
+        }
+
+        .log-note-off {
+            color: #e74c3c;
+        }
+
+        .log-cc {
+            color: #3498db;
+        }
+
+        .log-system {
+            color: #f39c12;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .connecting .led {
+            animation: pulse 1s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>MIDI Gateway - Emisor</h1>
+            <p>Proyecto Live Roots - Alerce Milenario | GC Lab Chile</p>
+        </header>
+
+        <div class="card">
+            <h2>Configuracion</h2>
+            <div class="config-section">
+                <div class="form-group">
+                    <label for="serverUrl">URL del Servidor</label>
+                    <input type="text" id="serverUrl" placeholder="http://localhost:3000" value="http://localhost:3000">
+                </div>
+                <div class="form-group">
+                    <label for="midiDevice">Dispositivo MIDI</label>
+                    <select id="midiDevice">
+                        <option value="">-- Seleccionar dispositivo --</option>
+                    </select>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="btnConnect">Conectar</button>
+                    <button class="btn btn-danger" id="btnDisconnect" disabled>Desconectar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Estado de Conexion</h2>
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="led led-red" id="ledServer"></div>
+                    <div>
+                        <div style="font-weight: 600;">Servidor</div>
+                        <div style="font-size: 0.85rem; opacity: 0.7;" id="serverStatus">Desconectado</div>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="led led-red" id="ledMidi"></div>
+                    <div>
+                        <div style="font-weight: 600;">MIDI</div>
+                        <div style="font-size: 0.85rem; opacity: 0.7;" id="midiStatus">Sin dispositivo</div>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="led led-yellow" id="ledReceivers"></div>
+                    <div>
+                        <div style="font-weight: 600;">Receptores</div>
+                        <div style="font-size: 0.85rem; opacity: 0.7;" id="receiversStatus">0 conectados</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Estadisticas</h2>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-value" id="statNotes">0</div>
+                    <div class="stat-label">Notas Enviadas</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="statLatency">--</div>
+                    <div class="stat-label">Latencia (ms)</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="statUptime">00:00:00</div>
+                    <div class="stat-label">Tiempo Activo</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Log de Actividad MIDI</h2>
+            <div class="log-container" id="logContainer">
+                <div class="log-entry log-system">[Sistema] Esperando conexion...</div>
+            </div>
+        </div>
+
+        <footer>
+            GC Lab Chile &copy; 2025 | MIDI Remote Gateway
+        </footer>
+    </div>
+
+    <script>
+        // Estado de la aplicacion
+        const state = {
+            connected: false,
+            midiConnected: false,
+            startTime: null,
+            notesSent: 0,
+            receiversCount: 0
+        };
+
+        // Elementos del DOM
+        const elements = {
+            serverUrl: document.getElementById('serverUrl'),
+            midiDevice: document.getElementById('midiDevice'),
+            btnConnect: document.getElementById('btnConnect'),
+            btnDisconnect: document.getElementById('btnDisconnect'),
+            ledServer: document.getElementById('ledServer'),
+            ledMidi: document.getElementById('ledMidi'),
+            ledReceivers: document.getElementById('ledReceivers'),
+            serverStatus: document.getElementById('serverStatus'),
+            midiStatus: document.getElementById('midiStatus'),
+            receiversStatus: document.getElementById('receiversStatus'),
+            statNotes: document.getElementById('statNotes'),
+            statLatency: document.getElementById('statLatency'),
+            statUptime: document.getElementById('statUptime'),
+            logContainer: document.getElementById('logContainer')
+        };
+
+        // Formatear tiempo
+        function formatTime(seconds) {
+            const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+            const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+            const s = (seconds % 60).toString().padStart(2, '0');
+            return `${h}:${m}:${s}`;
+        }
+
+        // Agregar log
+        function addLog(message, type = 'system') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            const time = new Date().toLocaleTimeString();
+            entry.textContent = `[${time}] ${message}`;
+            elements.logContainer.appendChild(entry);
+
+            // Mantener solo las ultimas 50 entradas
+            while (elements.logContainer.children.length > 50) {
+                elements.logContainer.removeChild(elements.logContainer.firstChild);
+            }
+
+            // Scroll al final
+            elements.logContainer.scrollTop = elements.logContainer.scrollHeight;
+        }
+
+        // Actualizar LED
+        function setLed(led, status) {
+            led.className = 'led';
+            if (status === 'connected') led.classList.add('led-green');
+            else if (status === 'warning') led.classList.add('led-yellow');
+            else led.classList.add('led-red');
+        }
+
+        // Actualizar uptime
+        function updateUptime() {
+            if (state.startTime) {
+                const seconds = Math.floor((Date.now() - state.startTime) / 1000);
+                elements.statUptime.textContent = formatTime(seconds);
+            }
+        }
+
+        // Inicializar Web MIDI API (si esta disponible)
+        async function initMidi() {
+            if (navigator.requestMIDIAccess) {
+                try {
+                    const midiAccess = await navigator.requestMIDIAccess();
+                    const inputs = midiAccess.inputs;
+
+                    elements.midiDevice.innerHTML = '<option value="">-- Seleccionar dispositivo --</option>';
+
+                    inputs.forEach((input, key) => {
+                        const option = document.createElement('option');
+                        option.value = key;
+                        option.textContent = input.name;
+                        elements.midiDevice.appendChild(option);
+                    });
+
+                    if (inputs.size === 0) {
+                        addLog('No se encontraron dispositivos MIDI', 'system');
+                    } else {
+                        addLog(`${inputs.size} dispositivo(s) MIDI encontrado(s)`, 'system');
+                    }
+                } catch (err) {
+                    addLog('Error accediendo a MIDI: ' + err.message, 'system');
+                }
+            } else {
+                addLog('Web MIDI API no soportada en este navegador', 'system');
+            }
+        }
+
+        // Simular conexion (en produccion usar Socket.io real)
+        function simulateConnection() {
+            state.connected = true;
+            state.startTime = Date.now();
+
+            setLed(elements.ledServer, 'connected');
+            elements.serverStatus.textContent = 'Conectado';
+
+            elements.btnConnect.disabled = true;
+            elements.btnDisconnect.disabled = false;
+
+            addLog('Conectado al servidor', 'system');
+
+            // Simular datos MIDI entrantes
+            simulateMidiData();
+        }
+
+        // Simular datos MIDI
+        function simulateMidiData() {
+            if (!state.connected) return;
+
+            const types = ['note-on', 'note-off', 'cc'];
+            const type = types[Math.floor(Math.random() * types.length)];
+
+            if (type === 'note-on') {
+                const note = Math.floor(Math.random() * 127);
+                const vel = Math.floor(Math.random() * 127);
+                addLog(`Note ON: ${note} vel:${vel} ch:0`, 'note-on');
+                state.notesSent++;
+                elements.statNotes.textContent = state.notesSent;
+            } else if (type === 'note-off') {
+                const note = Math.floor(Math.random() * 127);
+                addLog(`Note OFF: ${note} ch:0`, 'note-off');
+            } else {
+                const cc = Math.floor(Math.random() * 127);
+                const val = Math.floor(Math.random() * 127);
+                addLog(`CC: ${cc}=${val} ch:0`, 'cc');
+            }
+
+            // Simular latencia
+            elements.statLatency.textContent = Math.floor(Math.random() * 50 + 30);
+
+            setTimeout(simulateMidiData, Math.random() * 2000 + 500);
+        }
+
+        // Desconectar
+        function disconnect() {
+            state.connected = false;
+            state.startTime = null;
+
+            setLed(elements.ledServer, 'disconnected');
+            elements.serverStatus.textContent = 'Desconectado';
+
+            elements.btnConnect.disabled = false;
+            elements.btnDisconnect.disabled = true;
+
+            addLog('Desconectado del servidor', 'system');
+        }
+
+        // Event listeners
+        elements.btnConnect.addEventListener('click', simulateConnection);
+        elements.btnDisconnect.addEventListener('click', disconnect);
+
+        elements.midiDevice.addEventListener('change', (e) => {
+            if (e.target.value) {
+                setLed(elements.ledMidi, 'connected');
+                elements.midiStatus.textContent = e.target.options[e.target.selectedIndex].text;
+                state.midiConnected = true;
+                addLog(`Dispositivo MIDI seleccionado: ${e.target.options[e.target.selectedIndex].text}`, 'system');
+            } else {
+                setLed(elements.ledMidi, 'disconnected');
+                elements.midiStatus.textContent = 'Sin dispositivo';
+                state.midiConnected = false;
+            }
+        });
+
+        // Actualizar uptime cada segundo
+        setInterval(updateUptime, 1000);
+
+        // Inicializar
+        initMidi();
+        addLog('Interfaz de emisor inicializada', 'system');
+    </script>
+</body>
+</html>
