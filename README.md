@@ -17,9 +17,9 @@
 
 ## Proyecto Live Roots - Alerce Milenario
 
-Este sistema fue desarrollado para el proyecto **Live Roots** de GC Lab Chile, que conecta un **Alerce Milenario** en el sur de Chile con presentaciones artisticas en Santiago y otras ciudades.
+Este sistema fue desarrollado para el proyecto de Live Roots junto con GC Lab Chile, que conecta un **Alerce Milenario** en el sur de Chile con presentaciones artisticas en Santiago y otras ciudades.
 
-Utilizando un dispositivo **MIDI Sprout/Live Roots**, se captura la impedancia electrica del arbol milenario y se convierte en senales MIDI. Este sistema permite transmitir esas senales en tiempo real a traves de Internet para su uso en **Ableton Live**, **TouchDesigner** y otros softwares creativos.
+Utilizando un dispositivo **MIDI Live Roots**, se captura la impedancia electrica del arbol milenario y se convierte en senales MIDI. Este sistema permite transmitir esas senales en tiempo real a traves de Internet para su uso en **Ableton Live**, **TouchDesigner** y otros softwares creativos.
 
 ---
 
